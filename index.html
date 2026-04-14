@@ -169,7 +169,24 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
-    <!-- 管理画面パネル -->
+    <!-- 管理画面：ログイン -->
+    <div id="admin-login-overlay" class="post-overlay">
+        <div class="post-form" style="max-width: 400px; padding: 2.5rem;">
+            <div class="post-form-header">
+                <h3>管理者ログイン</h3>
+            </div>
+            <div class="field-item" style="margin-top: 1.5rem;">
+                <label>パスワード</label>
+                <input type="password" id="admin-password-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') checkAdminPassword()">
+            </div>
+            <div class="post-actions" style="margin-top: 1.5rem;">
+                <button class="cancel-btn" onclick="closeAdminPanel()">キャンセル</button>
+                <button class="submit-btn" onclick="checkAdminPassword()">ログイン</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 管理画面：メイン -->
     <div id="admin-panel" class="post-overlay">
         <div class="post-form" style="max-width: 860px; max-height: 80vh; overflow-y: auto; padding: 2.5rem;">
             <div class="post-form-header">

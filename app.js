@@ -121,8 +121,8 @@ function setupFirestoreListener() {
             });
 
             GLOBAL_VOICES = rawVoices.filter(v =>
-                !/テスト|test|Test|あいうえお/i.test(v.message) &&
-                !/テスト|test|Test/i.test(v.handle)
+                !/テスト|てすと|test|あいうえお/i.test(v.message) &&
+                !/テスト|てすと|test/i.test(v.handle)
             );
 
             updateCounter();
@@ -519,16 +519,25 @@ async function handleVoiceSubmission(data) {
 const ADMIN_PASSWORD = 'atopy2025';
 
 function openAdminPanel() {
-    const password = prompt('管理者パスワードを入力してください:');
-    if (password !== ADMIN_PASSWORD) {
-        alert('パスワードが違います');
+    document.getElementById('admin-login-overlay').classList.add('active');
+    setTimeout(() => document.getElementById('admin-password-input').focus(), 100);
+}
+
+function checkAdminPassword() {
+    const input = document.getElementById('admin-password-input').value;
+    if (input !== ADMIN_PASSWORD) {
+        document.getElementById('admin-password-input').value = '';
+        document.getElementById('admin-password-input').placeholder = 'パスワードが違います';
         return;
     }
+    document.getElementById('admin-login-overlay').classList.remove('active');
+    document.getElementById('admin-password-input').value = '';
     document.getElementById('admin-panel').classList.add('active');
     renderAdminVoices();
 }
 
 function closeAdminPanel() {
+    document.getElementById('admin-login-overlay').classList.remove('active');
     document.getElementById('admin-panel').classList.remove('active');
 }
 

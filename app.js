@@ -879,9 +879,11 @@ async function init() {
 
     initPostForm();
 
-    // URLパラメータによる初期モード設定・管理画面起動
+    // モバイルは常に一覧モード
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('view') === 'list' || window.location.hash === '#list') {
+    if (window.innerWidth <= 768) {
+        switchMode('list');
+    } else if (urlParams.get('view') === 'list' || window.location.hash === '#list') {
         switchMode('list');
     }
     if (urlParams.has('admin')) {

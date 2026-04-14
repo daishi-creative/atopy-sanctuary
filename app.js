@@ -2,7 +2,7 @@
 // Firebase 初期化
 // ============================================
 const firebaseConfig = {
-    apiKey: "AIzaSyAhHatAvLzJVBViUrHEg1cul_hm9ipjQYQ",
+    apiKey: "__FIREBASE_API_KEY__",
     authDomain: "atopy-sanctuary.firebaseapp.com",
     projectId: "atopy-sanctuary",
     storageBucket: "atopy-sanctuary.firebasestorage.app",

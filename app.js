@@ -621,14 +621,34 @@ async function migrateVoicesJson() {
 
 function updateCounter() {
     const counter = document.getElementById('total-counter');
+    const phaseEl = document.getElementById('phase-progress');
     const approvedCount = GLOBAL_VOICES.filter(v => v.status === 'approved').length;
-    const current = approvedCount;
     const pendingCount = GLOBAL_VOICES.filter(v => v.status === 'pending').length;
-    
+
     counter.innerHTML = `
-        ${current.toLocaleString()}
-        ${pendingCount > 0 ? `<small style="font-size: 0.8rem; opacity: 0.5; margin-left: 10px;">(審査中 ${pendingCount})</small>` : ''}
+        ${approvedCount.toLocaleString()}
+        ${pendingCount > 0 ? `<small style="font-size:0.8rem;opacity:0.5;margin-left:8px;">(審査中 ${pendingCount})</small>` : ''}
     `;
+
+    if (phaseEl) {
+        const phases = [
+            { label: 'Phase 1', target: 100, desc: '孤独の解体・共鳴の発生' },
+            { label: 'Phase 2', target: 500, desc: '制度的バグの可視化' },
+            { label: 'Phase 3', target: 1000, desc: '行政・政治へのロビー活動' },
+            { label: 'Phase 4', target: 10000, desc: '社会パラダイムの変革' }
+        ];
+        const next = phases.find(p => approvedCount < p.target) || phases[phases.length - 1];
+        const remaining = next.target - approvedCount;
+        const pct = Math.min(100, Math.round((approvedCount / next.target) * 100));
+
+        phaseEl.innerHTML = `
+            <div class="phase-label">${next.label}まで あと <strong>${remaining.toLocaleString()}件</strong></div>
+            <div class="phase-bar-wrap">
+                <div class="phase-bar" style="width:${pct}%"></div>
+            </div>
+            <div class="phase-desc">${next.desc}</div>
+        `;
+    }
 }
 
 function openModal(text) {

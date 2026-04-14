@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atopy 0 Project V2 | 共感の可視化</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-overlay"></div>
+    <div class="orb-container">
+        <div class="presence-orb orb-1"></div>
+        <div class="presence-orb orb-2"></div>
+        <div class="presence-orb orb-3"></div>
+    </div>
+
+    <!-- Sanctuary Header: 統合された最上部エリア（垂直スタック構成） -->
+    <header class="master-header">
+        <h1 class="project-title">あなたのアトピーのリアルな声</h1>
+        <div class="header-sub">
+            <span class="hope-badge">希望力 - Power to Hope</span>
+        </div>
+        <!-- V4.5: Sacred Manifesto (常設の聖域憲法) -->
+        <div class="sacred-manifesto" id="sacred-manifesto">
+            <p class="manifesto-lead">
+                ここは、誰にも言えない痒みと絶望を置き去り、未来を描くための聖域です。<br>
+                夜の長い痒み、鏡に映る自分への絶望。それらはすべて、社会のバグを修正し、あなた自身を救うための「証拠」となります。
+            </p>
+            <p class="manifesto-call">
+                今、この場所で本音を解放（浄化）し、治癒の先にある希望を、宇宙に投げ込んでください。<br>
+                <span class="highlight">100の声は孤独を消し、1,000の声は世界を動かします。</span>
+            </p>
+            <small class="disclaimer-note">※ 個別の治療については必ず専門医にご相談ください。</small>
+        </div>
+
+        <!-- V4: 共鳴する今日の一言（北極星） -->
+        <div class="polaris-banner" id="polaris-banner">
+            <div class="polaris-header">
+                <span class="label-jp">共鳴する、今日の一言</span>
+                <span class="label-en">RESONANT VOICE OF THE DAY</span>
+            </div>
+            <div class="polaris-voice" id="polaris-voice">—— 心の解毒、準備中 ——</div>
+        </div>
+    </header>
+    
+    <div id="app">
+        <!-- 一覧、コンテナ等はそのまま -->
+        <div id="voices-container"></div>
+        <div id="list-view" class="hidden">
+            <div class="list-toolbar">
+                <div class="list-filter" id="list-filter"></div>
+                <span class="list-count" id="list-count"></span>
+            </div>
+            <div class="list-scroll" id="list-scroll"></div>
+        </div>
+
+        <div class="mode-toggle" id="mode-toggle">
+            <button class="mode-btn active" data-mode="universe">🌌 宇宙</button>
+            <button class="mode-btn" data-mode="list">📋 一覧</button>
+        </div>
+
+        <button class="simulate-btn" id="open-post-btn">＋ 本音を投げ込む</button>
+
+        <div class="solidarity-counter">
+            <div class="number" id="total-counter">—</div>
+            <div class="label">今、ここに集まった言葉</div>
+        </div>
+    </div>
+
+    <!-- V4: 本音投稿フォーム（インライン） -->
+    <div id="post-overlay" class="post-overlay">
+        <div class="post-form">
+            <div class="post-form-header">
+                <h3>アトピーの本音</h3>
+                <p>ここは誰にも否定されない言論空間です。今、抱えているものをそのまま置いていってください。</p>
+            </div>
+
+            <!-- マニフェストは冒頭へ移動（フォームはスリム化） -->
+            
+            <!-- V4.2: Twin Stars Selector -->
+            <div class="post-type-selector">
+                <button class="type-tab active" data-type="pain">
+                    <div class="type-label">
+                        <strong>浄化</strong>
+                        <small>今の本音を置いていく</small>
+                    </div>
+                </button>
+                <button class="type-tab" data-type="dream">
+                    <div class="type-label">
+                        <strong>希望</strong>
+                        <small>未来の夢を描く</small>
+                    </div>
+                </button>
+            </div>
+
+                <div class="post-fields">
+                    <div class="field-item">
+                        <label>本音（今日の心の声）</label>
+                        <textarea id="post-message" placeholder="例：かゆくて眠れない、誰にもわかってもらえない、でも今日は少しだけマシかも..." maxlength="400"></textarea>
+                    </div>
+                <div class="field-row">
+                    <div class="field-item">
+                        <label>ハンドルネーム</label>
+                        <input type="text" id="post-handle" placeholder="匿名" maxlength="20">
+                    </div>
+                    <div class="field-item">
+                        <label>年代</label>
+                        <select id="post-age">
+                            <option value="">選択してください</option>
+                            <option value="0〜9歳">0〜9歳</option>
+                            <option value="10代">10代</option>
+                            <option value="20代">20代</option>
+                            <option value="30代">30代</option>
+                            <option value="40代">40代</option>
+                            <option value="50代">50代</option>
+                            <option value="60代以上">60代以上</option>
+                            <option value="その他 / 無回答">その他 / 無回答</option>
+                        </select>
+                    </div>
+                    <div class="field-item">
+                        <label>性別</label>
+                        <select id="post-gender">
+                            <option value="">（任意）</option>
+                            <option value="男性">男性</option>
+                            <option value="女性">女性</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                </div> <!-- .post-fields end -->
+                <div class="post-actions">
+                    <button class="cancel-btn" id="close-post-btn">戻る</button>
+                    <button class="submit-btn" id="submit-post-btn">本音を投稿する</button>
+                </div>
+            </div> <!-- .post-form-body end -->
+        </div>
+    </div>
+
+    <!-- V4.4: カテゴリー選択（タグ・クラウド・モーダル） -->
+    <div id="tag-overlay" class="post-overlay">
+        <div class="post-form" style="max-width: 600px; padding: 3rem;">
+            <div class="post-form-header">
+                <h3>カテゴリーで探す</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; letter-spacing: 0.05em;">
+                    共通の悩みや希望を持つ仲間の声に、深く共鳴するために。
+                </p>
+            </div>
+            <div id="tag-cloud-container" class="tag-cloud"></div>
+            <div class="post-actions" style="margin-top: 3rem;">
+                <button class="cancel-btn" onclick="closeTagOverlay()">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- V3: 魂のフィードバックモーダル -->
+    <div id="modal-overlay">
+        <div class="feedback-modal">
+            <h2>本音の解放</h2>
+            <div class="feedback-content" id="modal-text">
+                <!-- ここにランダムメッセージが入る -->
+            </div>
+            <button class="close-btn" onclick="closeModal()">閉じる</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (compat) -->
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+
+    <!-- 管理画面パネル -->
+    <div id="admin-panel" class="post-overlay">
+        <div class="post-form" style="max-width: 860px; max-height: 80vh; overflow-y: auto; padding: 2.5rem;">
+            <div class="post-form-header">
+                <h3>管理画面</h3>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">投稿の承認・却下・削除を行います</p>
+            </div>
+            <div id="admin-voice-list" style="margin-top: 1.5rem;"></div>
+            <div class="post-actions" style="margin-top: 2rem;">
+                <button class="cancel-btn" onclick="closeAdminPanel()">閉じる</button>
+                <button class="submit-btn" onclick="migrateVoicesJson()" style="font-size: 0.8rem; opacity: 0.6;">voices.json を Firestore へ移行</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

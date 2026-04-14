@@ -818,7 +818,13 @@ function startUniverseLoop() {
     let index = 0;
     universeInterval = setInterval(() => {
         const voicesContainer = document.getElementById('voices-container');
-        voicesContainer.appendChild(createVoiceCard(GLOBAL_VOICES[index % GLOBAL_VOICES.length]));
+        const approved = GLOBAL_VOICES.filter(v => v.status === 'approved');
+        if (approved.length === 0) return;
+        const displayedIds = new Set([...voicesContainer.querySelectorAll('.voice-card')].map(c => c.dataset.id));
+        const available = approved.filter(v => !displayedIds.has(String(v.id)));
+        if (available.length === 0) return;
+        const voice = available[index % available.length];
+        voicesContainer.appendChild(createVoiceCard(voice));
         enforceCardLimit();
         index++;
     }, 6000);
@@ -841,23 +847,15 @@ async function init() {
     // 初期データが届くまで待機
     await new Promise(resolve => setTimeout(resolve, 900));
 
-    // 初期バースト：少しずつ散布
-    if (GLOBAL_VOICES.length > 0) {
-        const burstCount = Math.min(GLOBAL_VOICES.length, 12);
-        for (let i = 0; i < burstCount; i++) {
+    // 初期バースト：承認済みを1件ずつ表示（重複なし）
+    const approved = GLOBAL_VOICES.filter(v => v.status === 'approved');
+    if (approved.length > 0) {
+        approved.forEach((voice, i) => {
             setTimeout(() => {
-                voicesContainer.appendChild(createVoiceCard(GLOBAL_VOICES[i]));
+                voicesContainer.appendChild(createVoiceCard(voice));
             }, i * 350);
-        }
-
-        let burstIndex = burstCount;
-        universeInterval = setInterval(() => {
-            if (GLOBAL_VOICES.length > 0) {
-                voicesContainer.appendChild(createVoiceCard(GLOBAL_VOICES[burstIndex % GLOBAL_VOICES.length]));
-                enforceCardLimit();
-                burstIndex++;
-            }
-        }, 6000);
+        });
+        startUniverseLoop();
     }
 
     // モード切替ボタン

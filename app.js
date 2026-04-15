@@ -13,16 +13,33 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ============================================
+// XSS 対策: HTML エスケープ
+// ============================================
+function escapeHtml(str) {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// ============================================
 // サイドドロワー
 // ============================================
 function openDrawer() {
-    document.getElementById('side-drawer').classList.add('open');
+    const drawer = document.getElementById('side-drawer');
+    drawer.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
     document.getElementById('drawer-backdrop').classList.add('open');
     document.body.style.overflow = 'hidden';
 }
 
 function closeDrawer() {
-    document.getElementById('side-drawer').classList.remove('open');
+    const drawer = document.getElementById('side-drawer');
+    drawer.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
     document.getElementById('drawer-backdrop').classList.remove('open');
     document.body.style.overflow = '';
 }
@@ -79,11 +96,13 @@ function suggestTags(message) {
 }
 
 function moderateVoice(message) {
-    let sanitized = message;
+    // まず HTML エスケープして XSS を防ぐ
+    let sanitized = escapeHtml(message);
     let isSensitive = false;
     let isMedical = false;
 
     // 1. ピンポイントボカシ（強い言葉のみを<span>で囲む）
+    // SENSITIVE_WORDS は通常 HTML 特殊文字を含まないため、エスケープ後も split/join で一致する
     SENSITIVE_WORDS.forEach(word => {
         if (message.includes(word)) {
             isSensitive = true;
@@ -258,13 +277,13 @@ function createVoiceCard(data) {
 
     card.innerHTML = `
         ${data.isMedical ? '<div class="medical-badge">※体験談</div>' : ''}
-        <div class="handle">${data.handle}</div>
+        <div class="handle">${escapeHtml(data.handle)}</div>
         <div class="message" style="font-size: ${baseFontSize + fontVariation}rem">
             ${data.message}
         </div>
         <div class="meta" style="${(!ageText && !genderText) ? 'display:none;' : ''}">
-            <span>${ageText}</span>
-            <span>${genderText}</span>
+            <span>${escapeHtml(ageText)}</span>
+            <span>${escapeHtml(genderText)}</span>
         </div>
     `;
 
@@ -574,11 +593,11 @@ function renderAdminVoices() {
             item.style.cssText = 'border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1rem;margin-bottom:1rem;background:rgba(255,255,255,0.03);';
             item.innerHTML = `
                 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
-                    <span style="font-weight:600;color:var(--text-bright);">${data.handle || '匿名'}</span>
-                    <span style="font-size:0.75rem;color:${statusColor};border:1px solid ${statusColor};padding:2px 8px;border-radius:20px;">${data.status || 'pending'}</span>
+                    <span style="font-weight:600;color:var(--text-bright);">${escapeHtml(data.handle || '匿名')}</span>
+                    <span style="font-size:0.75rem;color:${statusColor};border:1px solid ${statusColor};padding:2px 8px;border-radius:20px;">${escapeHtml(data.status || 'pending')}</span>
                 </div>
-                <p style="font-size:0.9rem;color:var(--text-muted);margin:0.5rem 0;">${data.message || ''}</p>
-                <div style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:0.75rem;">${data.age || ''} ${data.gender || ''} ／ ${createdAt}</div>
+                <p style="font-size:0.9rem;color:var(--text-muted);margin:0.5rem 0;white-space:pre-wrap;">${escapeHtml(data.message || '')}</p>
+                <div style="font-size:0.75rem;color:rgba(255,255,255,0.3);margin-bottom:0.75rem;">${escapeHtml(data.age || '')} ${escapeHtml(data.gender || '')} ／ ${escapeHtml(createdAt)}</div>
                 <div style="display:flex;gap:0.5rem;">
                     <button onclick="approveVoice('${docSnap.id}')" style="background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid #4ade80;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.8rem;">承認</button>
                     <button onclick="rejectVoice('${docSnap.id}')" style="background:rgba(248,113,113,0.15);color:#f87171;border:1px solid #f87171;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.8rem;">却下</button>
@@ -591,19 +610,31 @@ function renderAdminVoices() {
 }
 
 async function approveVoice(id) {
-    await db.collection('voices').doc(id).update({ status: 'approved' });
-    renderAdminVoices();
+    try {
+        await db.collection('voices').doc(id).update({ status: 'approved' });
+        renderAdminVoices();
+    } catch (e) {
+        alert('承認に失敗しました: ' + e.message);
+    }
 }
 
 async function rejectVoice(id) {
-    await db.collection('voices').doc(id).update({ status: 'rejected' });
-    renderAdminVoices();
+    try {
+        await db.collection('voices').doc(id).update({ status: 'rejected' });
+        renderAdminVoices();
+    } catch (e) {
+        alert('却下に失敗しました: ' + e.message);
+    }
 }
 
 async function deleteVoice(id) {
     if (!confirm('この投稿を完全に削除しますか？')) return;
-    await db.collection('voices').doc(id).delete();
-    renderAdminVoices();
+    try {
+        await db.collection('voices').doc(id).delete();
+        renderAdminVoices();
+    } catch (e) {
+        alert('削除に失敗しました: ' + e.message);
+    }
 }
 
 async function migrateVoicesJson() {
@@ -736,15 +767,15 @@ function renderListView(filterTag = null) {
 
         const ageText = (v.age && v.age !== '??') ? v.age : '';
         const genderText = (v.gender && v.gender !== '??') ? v.gender : '';
-        const tagsHtml = (v.tags || []).map(t => `<span class="tag-label">${t}</span>`).join('');
+        const tagsHtml = (v.tags || []).map(t => `<span class="tag-label">${escapeHtml(t)}</span>`).join('');
 
         item.innerHTML = `
             ${v.isMedical ? '<div class="medical-badge" style="position:relative; top:0; right:0; float:right; margin-bottom:5px;">※体験談</div>' : ''}
-            <div class="handle">${v.handle}</div>
+            <div class="handle">${escapeHtml(v.handle)}</div>
             <div class="message">${v.message}</div>
             <div class="meta" style="${(!ageText && !genderText) ? 'display:none;' : ''}">
-                <span>${ageText}</span>
-                <span>${genderText}</span>
+                <span>${escapeHtml(ageText)}</span>
+                <span>${escapeHtml(genderText)}</span>
             </div>
             <div class="tags">${tagsHtml}</div>
         `;
@@ -913,6 +944,26 @@ async function init() {
     });
 
     initPostForm();
+
+    // ESC キーで各種オーバーレイを閉じる
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        const drawer = document.getElementById('side-drawer');
+        if (drawer && drawer.classList.contains('open')) {
+            closeDrawer();
+            return;
+        }
+        const modal = document.getElementById('modal-overlay');
+        if (modal && modal.classList.contains('active')) {
+            closeModal();
+            return;
+        }
+        const postOverlay = document.getElementById('post-overlay');
+        if (postOverlay && postOverlay.classList.contains('active')) {
+            postOverlay.classList.remove('active');
+            return;
+        }
+    });
 
     // モバイルは常に一覧モード
     const urlParams = new URLSearchParams(window.location.search);

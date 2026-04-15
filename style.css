@@ -1503,7 +1503,7 @@ body {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.6);
-    z-index: 300;
+    z-index: 2500;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -1522,7 +1522,7 @@ body {
     height: 100dvh;
     background: rgba(10, 11, 30, 0.97);
     border-right: 1px solid rgba(165, 243, 252, 0.15);
-    z-index: 400;
+    z-index: 2600;
     transform: translateX(-100%);
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;

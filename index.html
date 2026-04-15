@@ -37,10 +37,10 @@
     <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
 
     <!-- サイドドロワー：本体 -->
-    <aside class="side-drawer" id="side-drawer">
-        <button class="drawer-close" onclick="closeDrawer()">✕</button>
+    <aside class="side-drawer" id="side-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+        <button class="drawer-close" onclick="closeDrawer()" aria-label="メニューを閉じる">✕</button>
         <div class="drawer-content">
-            <h2 class="drawer-title">アトピーの歴史を、<br>私たちの手で書き換える</h2>
+            <h2 class="drawer-title" id="drawer-title">アトピーの歴史を、<br>私たちの手で書き換える</h2>
 
             <p>32年間アトピーと対峙してきた私が行き着いた結論。<br>
             それは「既存の医療データには、私たちの本当の心の苦しみが正直に反映されていない」という不都合な真実でした。</p>

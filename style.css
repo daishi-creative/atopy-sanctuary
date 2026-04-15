@@ -1476,9 +1476,9 @@ body {
    ============================================ */
 
 .menu-btn {
-    position: absolute;
-    top: 1.2rem;
-    left: 1.2rem;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(165, 243, 252, 0.2);
     color: var(--accent-blue);
@@ -1490,7 +1490,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 200;
+    z-index: 1100;
     transition: background 0.2s, border-color 0.2s;
 }
 

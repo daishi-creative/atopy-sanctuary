@@ -12,6 +12,21 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+// ============================================
+// サイドドロワー
+// ============================================
+function openDrawer() {
+    document.getElementById('side-drawer').classList.add('open');
+    document.getElementById('drawer-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+    document.getElementById('side-drawer').classList.remove('open');
+    document.getElementById('drawer-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
 let GLOBAL_VOICES = [];
 let currentMode = 'universe';
 let activeFilter = null;

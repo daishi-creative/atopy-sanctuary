@@ -712,10 +712,10 @@ function updateCounter() {
 
     if (phaseEl) {
         const phases = [
-            { label: 'Phase 1', target: 100, desc: '孤独の解体・共鳴の発生' },
-            { label: 'Phase 2', target: 500, desc: '制度的バグの可視化' },
-            { label: 'Phase 3', target: 1000, desc: '行政・政治へのロビー活動' },
-            { label: 'Phase 4', target: 10000, desc: '社会パラダイムの変革' }
+            { label: 'Phase 1', target: 100, desc: '100件の声は共感を生み、孤独を消す' },
+            { label: 'Phase 2', target: 500, desc: '500件のデータから、社会のバグを特定する' },
+            { label: 'Phase 3', target: 1000, desc: '1,000件の声は無視できない存在になり社会を動かし始める' },
+            { label: 'Phase 4', target: 10000, desc: '10,000件の声は社会のパラダイムを変革する' }
         ];
         const next = phases.find(p => approvedCount < p.target) || phases[phases.length - 1];
         const remaining = next.target - approvedCount;

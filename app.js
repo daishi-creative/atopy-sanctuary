@@ -790,32 +790,6 @@ function showAdminStatus(msg, isError = false) {
     setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
-async function removeSeedDuplicates() {
-    showAdminStatus('削除中...');
-    try {
-        const snap = await db.collection('voices').get();
-        const targets = snap.docs.filter(d => ['Tomo', 'spright', 'M'].includes(d.data().handle));
-        const groups = {};
-        targets.forEach(d => {
-            const h = d.data().handle;
-            if (!groups[h]) groups[h] = [];
-            groups[h].push({ id: d.id, t: d.data().createdAt?.seconds || 0 });
-        });
-        let deleted = 0;
-        for (const list of Object.values(groups)) {
-            list.sort((a, b) => a.t - b.t);
-            for (const item of list.slice(1)) {
-                await db.collection('voices').doc(item.id).delete();
-                deleted++;
-            }
-        }
-        showAdminStatus(`完了: ${deleted}件の重複を削除しました`);
-        renderAdminVoices();
-    } catch (e) {
-        showAdminStatus('削除に失敗しました: ' + e.message, true);
-    }
-}
-
 async function migrateVoicesJson() {
     showAdminStatus('移行中...');
     try {

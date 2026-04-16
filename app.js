@@ -450,18 +450,28 @@ function makeHandleClickable(container) {
 
 function shareToX(message, handle) {
     const text = `「${message.slice(0, 60)}${message.length > 60 ? '…' : ''}」— ${handle}\n\nアトピーのリアルな声を集めています。あなたも声を残してください。\n`;
+    const siteUrl = 'https://atopy-sanctuary.com/';
+    const fullText = `${text} ${siteUrl}`;
     const encodedText = encodeURIComponent(text);
-    const encodedUrl  = encodeURIComponent('https://atopy-sanctuary.com/');
-    const appUrl = `twitter://post?message=${encodedText}%20https%3A%2F%2Fatopy-sanctuary.com%2F`;
+    const encodedUrl  = encodeURIComponent(siteUrl);
+    const encodedFull = encodeURIComponent(fullText);
     const webUrl = `https://x.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
 
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    if (isMobile) {
-        // アプリ起動を試み、失敗なら1.2秒後にブラウザでXを開く
+    const ua = navigator.userAgent;
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    const isAndroid = /Android/i.test(ua);
+
+    if (isIOS) {
+        // iOS: twitter:// スキームで X アプリ起動 → 失敗なら 1.5秒後にブラウザで x.com
+        const appUrl = `twitter://post?message=${encodedFull}`;
         window.location.href = appUrl;
         setTimeout(() => {
             if (!document.hidden) window.location.href = webUrl;
-        }, 1200);
+        }, 1500);
+    } else if (isAndroid) {
+        // Android: intent URL（アプリ未インストールなら S.browser_fallback_url が自動発動）
+        const intentUrl = `intent://post?message=${encodedFull}#Intent;scheme=twitter;package=com.twitter.android;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+        window.location.href = intentUrl;
     } else {
         window.open(webUrl, '_blank', 'noopener,noreferrer');
     }
@@ -470,9 +480,13 @@ function shareToX(message, handle) {
 function addShareButton(card, message, handle) {
     if (card.querySelector('.share-btn')) return;
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'share-btn';
     btn.setAttribute('aria-label', 'Xでシェア');
     btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> シェア`;
+    // カードのドラッグ/タップ判定を遮断（展開状態で閉じないように）
+    btn.addEventListener('mousedown', (e) => e.stopPropagation());
+    btn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
     btn.addEventListener('click', (e) => { e.stopPropagation(); shareToX(message, handle); });
     card.appendChild(btn);
 }
@@ -996,9 +1010,12 @@ function toggleListItemExpand(item) {
         const msg = msgEl.textContent.trim();
         const hdl = handleEl.textContent.trim();
         const shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
         shareBtn.className = 'share-btn';
         shareBtn.setAttribute('aria-label', 'Xでシェア');
         shareBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> シェア`;
+        shareBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+        shareBtn.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
         shareBtn.addEventListener('click', (e) => { e.stopPropagation(); shareToX(msg, hdl); });
         modal.appendChild(shareBtn);
     }

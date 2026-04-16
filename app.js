@@ -257,7 +257,9 @@ function createVoiceCard(data) {
     
     // カードサイズに基づいて安全な位置を取得
     const widthMap = { 'tiny': 160, 'short': 220, 'long': 400, 'medium-long': 340, 'default': 280 };
-    const estimatedWidth = widthMap[sizeClass] || 280;
+    const isMobile = window.innerWidth <= 768;
+    const baseWidth = widthMap[sizeClass] || 280;
+    const estimatedWidth = isMobile ? Math.min(baseWidth, Math.floor(window.innerWidth / 3)) : baseWidth;
     const estimatedHeight = len < 30 ? 80 : len > 100 ? 200 : 140;
     
     const pos = findSafePosition(estimatedWidth, estimatedHeight);
@@ -466,27 +468,22 @@ function addShareButton(card, message, handle) {
 }
 
 function handleCardClick(card) {
+    // 他の展開済みカードを先に閉じる
     document.querySelectorAll('.voice-card.expanded').forEach(c => {
-        if (c !== card) {
-            c.classList.remove('expanded');
-            const btn = c.querySelector('.share-btn');
-            if (btn) btn.remove();
-        }
+        if (c !== card) closeExpandedCard(c);
     });
-    const wasExpanded = card.classList.contains('expanded');
-    card.classList.toggle('expanded');
 
-    if (!wasExpanded) {
-        visualizeHighlight(card, 'card');
+    const wasExpanded = card.classList.contains('expanded');
+    if (wasExpanded) {
+        closeExpandedCard(card);
+    } else {
+        openCardExpanded(card);
         const msgEl = card.querySelector('.message');
         const handleEl = card.querySelector('.handle');
         if (msgEl && handleEl) {
             addShareButton(card, msgEl.textContent.trim(), handleEl.textContent.trim());
         }
         makeHandleClickable(card);
-    } else {
-        const btn = card.querySelector('.share-btn');
-        if (btn) btn.remove();
     }
 }
 
@@ -557,19 +554,6 @@ function activateTag(tagName) {
     });
 }
 
-function visualizeHighlight(source, type = 'card') {
-    let targetTags = type === 'card' 
-        ? JSON.parse(source.dataset.tags) 
-        : [source.innerText.trim()];
-
-    document.querySelectorAll('.voice-card').forEach(card => {
-        const cardTags = JSON.parse(card.dataset.tags);
-        const match = targetTags.some(tag => cardTags.includes(tag));
-        card.style.opacity = match ? '1' : '0.1';
-        card.style.borderColor = match ? 'var(--accent-blue)' : '';
-        card.style.boxShadow = match ? '0 0 20px var(--accent-glow)' : '';
-    });
-}
 
 function resetHighlights() {
     document.querySelectorAll('.voice-card').forEach(card => {
@@ -582,6 +566,41 @@ function resetHighlights() {
     document.querySelectorAll('.keyword.active').forEach(k => k.classList.remove('active'));
 }
 
+// ============================================
+// カード展開・縮小（バックドロップ方式）
+// ============================================
+function openCardExpanded(card) {
+    let backdrop = document.getElementById('card-expand-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'card-expand-backdrop';
+        backdrop.className = 'card-expand-backdrop';
+        const closeViaBackdrop = () => {
+            const expanded = document.querySelector('.voice-card.expanded');
+            if (expanded) closeExpandedCard(expanded);
+        };
+        backdrop.addEventListener('click', closeViaBackdrop);
+        // iOS Safari: click may not fire on non-interactive elements without cursor:pointer
+        // Add touchend handler as a safety net
+        let touchMoved = false;
+        backdrop.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+        backdrop.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+        backdrop.addEventListener('touchend', (e) => {
+            if (!touchMoved) { e.preventDefault(); closeViaBackdrop(); }
+        });
+        document.body.appendChild(backdrop);
+    }
+    backdrop.classList.add('active');
+    card.classList.add('expanded');
+}
+
+function closeExpandedCard(card) {
+    card.classList.remove('expanded');
+    const btn = card.querySelector('.share-btn');
+    if (btn) btn.remove();
+    const backdrop = document.getElementById('card-expand-backdrop');
+    if (backdrop) backdrop.classList.remove('active');
+}
 
 // ============================================
 // V4: 本音投稿フォームの制御
@@ -1070,6 +1089,10 @@ function buildListFilter() {
 
 function switchMode(mode) {
     currentMode = mode;
+    // モード切替時に展開カードがあれば閉じる
+    const expandedCard = document.querySelector('.voice-card.expanded');
+    if (expandedCard) closeExpandedCard(expandedCard);
+
     const voicesContainer = document.getElementById('voices-container');
     const listView = document.getElementById('list-view');
 
@@ -1150,15 +1173,14 @@ async function init() {
         btn.addEventListener('click', () => switchMode(btn.dataset.mode));
     });
 
-    // 宇宙空間クリックでリセット（キーワード・ボタン以外のクリック）
+    // 宇宙空間クリックでリセット（カード・キーワード・ボタン以外のクリック）
     document.body.addEventListener('mousedown', (e) => {
         const target = e.target;
-        if (target.classList.contains('keyword') ||
-            target.classList.contains('mode-btn') ||
-            target.classList.contains('simulate-btn') ||
+        if (target.closest('.voice-card') ||
             target.closest('.keyword') ||
             target.closest('.mode-btn') ||
-            target.closest('.simulate-btn')) {
+            target.closest('.simulate-btn') ||
+            target.closest('#card-expand-backdrop')) {
             return;
         }
         resetHighlights();
@@ -1169,6 +1191,12 @@ async function init() {
     // ESC キーで各種オーバーレイを閉じる
     document.addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
+        // 展開済み宇宙カード
+        const expandedCard = document.querySelector('.voice-card.expanded');
+        if (expandedCard) {
+            closeExpandedCard(expandedCard);
+            return;
+        }
         const drawer = document.getElementById('side-drawer');
         if (drawer && drawer.classList.contains('open')) {
             closeDrawer();
@@ -1182,6 +1210,21 @@ async function init() {
         const postOverlay = document.getElementById('post-overlay');
         if (postOverlay && postOverlay.classList.contains('active')) {
             postOverlay.classList.remove('active');
+            return;
+        }
+        const tagOverlay = document.getElementById('tag-overlay');
+        if (tagOverlay && tagOverlay.style.display !== 'none' && tagOverlay.style.display !== '') {
+            closeTagOverlay();
+            return;
+        }
+        const adminPanel = document.getElementById('admin-panel');
+        if (adminPanel && adminPanel.classList.contains('active')) {
+            closeAdminPanel();
+            return;
+        }
+        const adminLogin = document.getElementById('admin-login-overlay');
+        if (adminLogin && adminLogin.classList.contains('active')) {
+            closeAdminPanel();
             return;
         }
         if (document.getElementById('handle-history-modal')) {

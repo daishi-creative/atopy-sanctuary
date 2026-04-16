@@ -225,11 +225,28 @@ body {
 
 .voice-card:active { cursor: grabbing; }
 
+/* カード展開時バックドロップ */
+.card-expand-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 11, 30, 0.72);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 4900;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+.card-expand-backdrop.active {
+    display: block;
+}
+
 .voice-card.expanded {
     position: fixed !important;
     top: 50% !important;
     left: 50% !important;
     transform: translate(-50%, -50%) rotate(0deg) !important;
+    animation: none !important;
     width: 90vw !important;
     max-width: 600px !important;
     height: auto !important;
@@ -1671,9 +1688,9 @@ body {
         letter-spacing: 0.05em;
     }
 
-    /* --- 宇宙モード：カード幅を画面幅に収める --- */
+    /* --- 宇宙モード：カード幅を画面幅の3分の1以下に収める --- */
     .voice-card {
-        max-width: calc(100vw - 40px);
+        max-width: calc(100vw / 3);
     }
 
     /* --- 声の件数カウンター：投稿ボタンの真上に固定 --- */

@@ -756,7 +756,7 @@ async function approveVoice(id) {
         await db.collection('voices').doc(id).update({ status: 'approved' });
         renderAdminVoices();
     } catch (e) {
-        alert('承認に失敗しました: ' + e.message);
+        showAdminStatus('承認に失敗しました: ' + e.message, true);
     }
 }
 
@@ -765,22 +765,33 @@ async function rejectVoice(id) {
         await db.collection('voices').doc(id).update({ status: 'rejected' });
         renderAdminVoices();
     } catch (e) {
-        alert('却下に失敗しました: ' + e.message);
+        showAdminStatus('却下に失敗しました: ' + e.message, true);
     }
 }
 
 async function deleteVoice(id) {
-    if (!confirm('この投稿を完全に削除しますか？')) return;
     try {
         await db.collection('voices').doc(id).delete();
+        showAdminStatus('削除しました');
         renderAdminVoices();
     } catch (e) {
-        alert('削除に失敗しました: ' + e.message);
+        showAdminStatus('削除に失敗しました: ' + e.message, true);
     }
 }
 
+function showAdminStatus(msg, isError = false) {
+    const el = document.getElementById('admin-status');
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.style.background = isError ? 'rgba(239,68,68,0.12)' : 'rgba(74,222,128,0.12)';
+    el.style.color = isError ? '#f87171' : '#4ade80';
+    el.style.border = `1px solid ${isError ? 'rgba(239,68,68,0.3)' : 'rgba(74,222,128,0.3)'}`;
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
 async function migrateVoicesJson() {
-    if (!confirm('voices.json のデータを Firestore に移行します。重複する場合があります。続けますか？')) return;
+    showAdminStatus('移行中...');
     try {
         const response = await fetch('voices.json');
         const voices = await response.json();
@@ -800,10 +811,10 @@ async function migrateVoicesJson() {
             });
             count++;
         }
-        alert(`${count} 件を Firestore に移行しました`);
+        showAdminStatus(`${count} 件を Firestore に移行しました`);
         renderAdminVoices();
     } catch (e) {
-        alert('移行に失敗しました: ' + e.message);
+        showAdminStatus('移行に失敗しました: ' + e.message, true);
     }
 }
 

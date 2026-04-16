@@ -830,34 +830,48 @@ function renderListView(filterTag = null) {
 }
 
 function toggleListItemExpand(item) {
-    const wasExpanded = item.classList.contains('expanded');
+    const isOpen = !!document.getElementById('list-expand-modal');
     closeListItemExpand();
-    if (!wasExpanded) {
-        item.classList.add('expanded');
-        let backdrop = document.getElementById('list-item-backdrop');
-        if (!backdrop) {
-            backdrop = document.createElement('div');
-            backdrop.id = 'list-item-backdrop';
-            backdrop.className = 'list-item-backdrop';
-            backdrop.addEventListener('click', closeListItemExpand);
-            document.body.appendChild(backdrop);
-        }
-        requestAnimationFrame(() => backdrop.classList.add('open'));
+    if (isOpen) return;
 
-        const msgEl = item.querySelector('.message');
-        const handleEl = item.querySelector('.handle');
-        if (msgEl && handleEl) {
-            addShareButton(item, msgEl.textContent.trim(), handleEl.textContent.trim());
-        }
+    // body に直接モーダルを生成（#list-view の stacking context を脱出）
+    const modal = document.createElement('div');
+    modal.id = 'list-expand-modal';
+    modal.className = 'list-expand-modal';
+    modal.innerHTML = item.innerHTML;
+
+    // シェアボタン
+    const msgEl = item.querySelector('.message');
+    const handleEl = item.querySelector('.handle');
+    if (msgEl && handleEl) {
+        const shareBtn = document.createElement('a');
+        shareBtn.className = 'share-btn';
+        shareBtn.href = buildShareUrl(msgEl.textContent.trim(), handleEl.textContent.trim());
+        shareBtn.target = '_blank';
+        shareBtn.rel = 'noopener noreferrer';
+        shareBtn.setAttribute('aria-label', 'Xでシェア');
+        shareBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> シェア`;
+        shareBtn.addEventListener('click', (e) => e.stopPropagation());
+        modal.appendChild(shareBtn);
     }
+
+    document.body.appendChild(modal);
+
+    // バックドロップ
+    let backdrop = document.getElementById('list-item-backdrop');
+    if (!backdrop) {
+        backdrop = document.createElement('div');
+        backdrop.id = 'list-item-backdrop';
+        backdrop.className = 'list-item-backdrop';
+        backdrop.addEventListener('click', closeListItemExpand);
+        document.body.appendChild(backdrop);
+    }
+    requestAnimationFrame(() => backdrop.classList.add('open'));
 }
 
 function closeListItemExpand() {
-    document.querySelectorAll('.list-item.expanded').forEach(el => {
-        el.classList.remove('expanded');
-        const btn = el.querySelector('.share-btn');
-        if (btn) btn.remove();
-    });
+    const modal = document.getElementById('list-expand-modal');
+    if (modal) modal.remove();
     const backdrop = document.getElementById('list-item-backdrop');
     if (backdrop) backdrop.classList.remove('open');
 }
@@ -1050,7 +1064,7 @@ async function init() {
             postOverlay.classList.remove('active');
             return;
         }
-        if (document.querySelector('.list-item.expanded')) {
+        if (document.getElementById('list-expand-modal')) {
             closeListItemExpand();
             return;
         }

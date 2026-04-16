@@ -291,12 +291,13 @@ function createVoiceCard(data) {
         card.classList.add('pending');
     }
 
-    // 負荷対策：一定時間後に自動削除
-    let removeTimer = setTimeout(() => { 
+    // 負荷対策：一定時間後に自動削除（removeInnerTimer も card に紐付けて掴み時にキャンセル可能に）
+    let removeInnerTimer = null;
+    let removeTimer = setTimeout(() => {
         if (!card.classList.contains('expanded') && !card.classList.contains('resonating')) {
             card.style.transition = 'opacity 2s ease';
             card.style.opacity = '0';
-            setTimeout(() => card.remove(), 2000);
+            removeInnerTimer = setTimeout(() => card.remove(), 2000);
         }
     }, 35000 + Math.random() * 15000);
 
@@ -304,6 +305,7 @@ function createVoiceCard(data) {
 
     card.addEventListener('mousedown', (e) => {
         clearTimeout(removeTimer);
+        if (removeInnerTimer) { clearTimeout(removeInnerTimer); removeInnerTimer = null; }
         startX = e.clientX;
         startY = e.clientY;
         dist = 0;
@@ -314,6 +316,7 @@ function createVoiceCard(data) {
 
         card.style.animation = 'none';
         card.style.transition = 'none';
+        card.style.opacity = '1';
         card.style.zIndex = '1000';
 
         const onMouseMove = (me) => {
@@ -779,8 +782,43 @@ function renderListView(filterTag = null) {
             </div>
             <div class="tags">${tagsHtml}</div>
         `;
+
+        item.addEventListener('click', () => toggleListItemExpand(item));
         listScroll.appendChild(item);
     });
+
+    // 省略表示（フェード）を必要なカードだけに付与
+    requestAnimationFrame(() => {
+        listScroll.querySelectorAll('.list-item').forEach(el => {
+            const msg = el.querySelector('.message');
+            if (msg && msg.scrollHeight > msg.clientHeight + 1) {
+                el.classList.add('is-clamped');
+            }
+        });
+    });
+}
+
+function toggleListItemExpand(item) {
+    const wasExpanded = item.classList.contains('expanded');
+    closeListItemExpand();
+    if (!wasExpanded) {
+        item.classList.add('expanded');
+        let backdrop = document.getElementById('list-item-backdrop');
+        if (!backdrop) {
+            backdrop = document.createElement('div');
+            backdrop.id = 'list-item-backdrop';
+            backdrop.className = 'list-item-backdrop';
+            backdrop.addEventListener('click', closeListItemExpand);
+            document.body.appendChild(backdrop);
+        }
+        requestAnimationFrame(() => backdrop.classList.add('open'));
+    }
+}
+
+function closeListItemExpand() {
+    document.querySelectorAll('.list-item.expanded').forEach(el => el.classList.remove('expanded'));
+    const backdrop = document.getElementById('list-item-backdrop');
+    if (backdrop) backdrop.classList.remove('open');
 }
 
 function openTagOverlay() {
@@ -869,6 +907,14 @@ function switchMode(mode) {
     if (mode === 'universe') {
         voicesContainer.style.display = '';
         listView.classList.add('hidden');
+        // 古いカードを一掃してから再投入（透明化バグ対策）
+        voicesContainer.innerHTML = '';
+        const approved = GLOBAL_VOICES.filter(v => v.status === 'approved');
+        approved.forEach((voice, i) => {
+            setTimeout(() => {
+                voicesContainer.appendChild(createVoiceCard(voice));
+            }, i * 250);
+        });
         startUniverseLoop();
     } else {
         voicesContainer.style.display = 'none';
@@ -961,6 +1007,10 @@ async function init() {
         const postOverlay = document.getElementById('post-overlay');
         if (postOverlay && postOverlay.classList.contains('active')) {
             postOverlay.classList.remove('active');
+            return;
+        }
+        if (document.querySelector('.list-item.expanded')) {
+            closeListItemExpand();
             return;
         }
     });

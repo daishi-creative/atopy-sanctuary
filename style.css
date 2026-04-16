@@ -796,6 +796,7 @@ body {
     padding-right: 1rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-auto-rows: 220px;
     gap: 1.2rem;
     align-content: start;
 }
@@ -811,13 +812,84 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.04);
     border-radius: 4px;
     padding: 1.3rem;
-    transition: all 0.3s;
-    cursor: default;
+    transition: border-color 0.3s, background 0.3s;
+    cursor: pointer;
+    height: 220px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.list-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 48px;
+    background: linear-gradient(to bottom, rgba(15, 16, 40, 0), rgba(15, 16, 40, 0.85));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.list-item.is-clamped::after {
+    opacity: 1;
 }
 
 .list-item:hover {
     border-color: rgba(165, 243, 252, 0.2);
     background: rgba(20, 22, 50, 0.7);
+}
+
+.list-item-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 4900;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.list-item-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 一覧モードで長文クリック時の展開モーダル */
+.list-item.expanded {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90vw;
+    max-width: 600px;
+    height: auto;
+    max-height: 80vh;
+    z-index: 5000;
+    padding: 2.5rem;
+    background: rgba(15, 17, 45, 0.98);
+    border: 1px solid var(--accent-blue);
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.9), 0 0 40px rgba(165, 243, 252, 0.2);
+    overflow-y: auto;
+    cursor: default;
+}
+
+.list-item.expanded::after {
+    display: none;
+}
+
+.list-item.expanded .message {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow: visible;
+    display: block;
+    font-size: 1rem;
+    line-height: 2;
+    flex: none;
 }
 
 .list-item .handle {
@@ -832,6 +904,13 @@ body {
     font-size: 0.88rem;
     line-height: 1.8;
     color: var(--text-main);
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+    min-height: 0;
 }
 
 .list-item .meta {
@@ -871,16 +950,21 @@ body {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
-    50% {
-        transform: translateY(-15px) translateX(8px) scale(1.01);
+    25% {
+        opacity: 1;
+        transform: translateY(-10px) translateX(6px) scale(1.005);
     }
-    80% {
-        opacity: 0.9;
-        transform: translateY(-30px) translateX(-5px) scale(1);
+    50% {
+        opacity: 1;
+        transform: translateY(-6px) translateX(-5px) scale(1.01);
+    }
+    75% {
+        opacity: 1;
+        transform: translateY(-12px) translateX(4px) scale(1.005);
     }
     100% {
-        opacity: 0;
-        transform: translateY(-60px) scale(1.03);
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
 }
 

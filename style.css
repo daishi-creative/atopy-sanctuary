@@ -1649,27 +1649,54 @@ body {
     #voices-container { display: none !important; }
     .mode-toggle { display: none; }
 
-    /* --- 声の件数カウンター --- */
+    /* --- 声の件数カウンター：投稿ボタンの真上に固定 --- */
     .solidarity-counter {
-        position: static;
+        position: fixed;
+        bottom: 60px;
+        left: 0;
+        right: 0;
         text-align: left;
-        padding: 0.8rem 1.2rem 5rem;
-        background: none;
+        padding: 0.6rem 1.2rem;
+        background: rgba(10, 11, 30, 0.97);
         border: none;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-top: 1px solid rgba(165, 243, 252, 0.08);
         border-radius: 0;
         margin-top: 0;
+        z-index: 190;
+        backdrop-filter: blur(12px);
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
     }
 
     .solidarity-counter .number {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
         display: inline;
-        margin-right: 0.5rem;
+        margin-right: 0;
+        margin-top: 0;
+        flex-shrink: 0;
     }
 
     .solidarity-counter .label {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         display: inline;
+    }
+
+    .solidarity-counter .phase-progress {
+        flex: 1;
+        margin-top: 0;
+        padding-top: 0;
+        border-top: none;
+        min-width: 0;
+    }
+
+    .solidarity-counter .phase-label {
+        font-size: 0.65rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .solidarity-counter .phase-desc {
+        display: none;
     }
 
     /* --- 一覧ビュー --- */
@@ -1680,7 +1707,7 @@ body {
         width: 100% !important;
         height: auto !important;
         overflow: visible !important;
-        padding: 0 0 7rem 0 !important;
+        padding: 0 0 8rem 0 !important;
     }
 
     .list-toolbar {

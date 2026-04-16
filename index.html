@@ -270,7 +270,8 @@
             <div id="admin-status" style="display:none; margin-top: 1rem; padding: 0.8rem 1.2rem; border-radius: 6px; font-size: 0.85rem; text-align: center;"></div>
             <div class="post-actions" style="margin-top: 2rem;">
                 <button class="cancel-btn" onclick="closeAdminPanel()">閉じる</button>
-                <!-- voices.json 移行ボタンは初期セットアップ完了済みのため撤去 -->
+                <!-- 一時ボタン: 重複削除後に撤去予定 -->
+                <button class="cancel-btn" onclick="removeSeedDuplicates()" style="font-size:0.8rem; opacity:0.7; border-color:rgba(251,191,36,0.4); color:#fbbf24;">重複データを削除</button>
             </div>
         </div>
     </div>

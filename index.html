@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -29,6 +30,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="bg-overlay"></div>
     <div class="orb-container">
@@ -41,18 +43,19 @@
     <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
 
     <!-- サイドドロワー：本体 -->
-    <aside class="side-drawer" id="side-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" aria-hidden="true">
+    <aside class="side-drawer" id="side-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title"
+        aria-hidden="true">
         <button class="drawer-close" onclick="closeDrawer()" aria-label="メニューを閉じる">✕</button>
         <div class="drawer-content">
             <h2 class="drawer-title" id="drawer-title">アトピーの歴史を、<br>私たちの手で書き換える</h2>
 
             <p>32年間アトピーと対峙してきた私が行き着いた結論。<br>
-            それは「既存の医療データには、私たちの本当の心の苦しみが正直に反映されていない」という不都合な真実でした。</p>
+                それは「既存の医療データには、私たちの本当の心の苦しみが正直に反映されていない」という不都合な真実でした。</p>
 
             <p>夜に寝るときの猛烈な痒みと絶望、鏡を見るたびに削られる自尊心、親にも友達にも皮膚科にも、誰にも言えない本音。これらは数値化できない生々しい声です。</p>
 
             <p>日本のアトピー患者はなんと<strong>120万人</strong>もいます。サイレントマジョリティ（声なき声）になっています。ですから皆さんの声が集まれば、ただの悩みや愚痴ではなくなります。<br>
-            あなたの声は社会のバグを修正し、あなたと未来の子どもたちを救う「証拠（エビデンス）」になります。</p>
+                あなたの声は社会のバグを修正し、あなたと未来の子どもたちを救う「証拠（エビデンス）」になります。</p>
 
             <p class="drawer-note">※完全匿名・アカウント登録不要。あなたの本音だけを預けてください。</p>
 
@@ -75,14 +78,19 @@
             </div>
 
             <p class="drawer-closing">誰にも忖度しないでください。私にも忖度しなくていいです。<br>
-            そしてあなたが本音を書き送信したその瞬間から、心はアトピー治癒に向けた"今までとは違う"前向きなモチベーションが生まれ、治癒への準備がスタートします。<br>
-            そしてその本音は誰かの共感を呼び、誰かの救いになります。</p>
+                そしてあなたが本音を書き送信したその瞬間から、心はアトピー治癒に向けた"今までとは違う"前向きなモチベーションが生まれ、治癒への準備がスタートします。<br>
+                そしてその本音は誰かの共感を呼び、誰かの救いになります。</p>
 
             <p class="drawer-cta">力を合わせて、社会のアトピーの無理解を理解へと変えていきましょう。</p>
 
-            <p class="drawer-legal">お預かりした心の声は個人・団体情報となりうる内容を避けた上で代読・紹介させていただく場合があります。投稿をもってご了承いただいたものとします。</p>
+            <div class="drawer-links"
+                style="margin-top: 1.5rem; text-align: center; font-size: 0.85rem; color: var(--text-muted);">
+                Produced by <a href="https://www.youtube.com/@whatwasatopic" target="_blank" rel="noopener noreferrer"
+                    style="color: var(--text-main); text-decoration: underline;">ダイシ</a>
+            </div>
 
-            <p class="drawer-credit">produced by ダイシ</p>
+            <p class="drawer-legal" style="margin-top: 1.5rem;">
+                お預かりした心の声は個人・団体情報となりうる内容を避けた上で代読・紹介させていただく場合があります。投稿をもってご了承いただいたものとします。</p>
         </div>
     </aside>
 
@@ -117,7 +125,7 @@
             <div class="polaris-voice" id="polaris-voice">—— 心の解毒、準備中 ——</div>
         </div>
     </header>
-    
+
     <div id="app">
         <!-- 一覧、コンテナ等はそのまま -->
         <div id="voices-container"></div>
@@ -152,7 +160,7 @@
             </div>
 
             <!-- マニフェストは冒頭へ移動（フォームはスリム化） -->
-            
+
             <!-- V4.2: Twin Stars Selector -->
             <div class="post-type-selector">
                 <button class="type-tab active" data-type="pain">
@@ -169,11 +177,13 @@
                 </button>
             </div>
 
-                <div class="post-fields">
-                    <div class="field-item">
-                        <label>本音（今日の心の声）</label>
-                        <textarea id="post-message" placeholder="例：かゆくて眠れない、誰にもわかってもらえない、でも今日は少しだけマシかも..." maxlength="400"></textarea>
-                    </div>
+            <div class="post-fields">
+                <div class="field-item">
+                    <label>本音（今日の心の声） <small
+                            style="margin-left: 0.6rem; opacity: 0.6; font-weight: normal; font-size: 0.75rem;">400文字まで</small></label>
+                    <textarea id="post-message" placeholder="例：かゆくて眠れない、誰にもわかってもらえない、でも今日は少しだけマシかも..."
+                        maxlength="400"></textarea>
+                </div>
                 <div class="field-row">
                     <div class="field-item">
                         <label>ハンドルネーム</label>
@@ -250,7 +260,8 @@
             </div>
             <div class="field-item" style="margin-top: 1.5rem;">
                 <label>パスワード</label>
-                <input type="password" id="admin-password-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') checkAdminPassword()">
+                <input type="password" id="admin-password-input" placeholder="パスワードを入力"
+                    onkeydown="if(event.key==='Enter') checkAdminPassword()">
             </div>
             <div class="post-actions" style="margin-top: 1.5rem;">
                 <button class="cancel-btn" onclick="closeAdminPanel()">キャンセル</button>
@@ -276,4 +287,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>

@@ -727,6 +727,11 @@ body {
     font-family: var(--font-sans);
     font-size: 0.8rem;
     padding: 0.65rem 1.6rem;
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: all 0.3s;
     letter-spacing: 0.08em;
@@ -874,9 +879,12 @@ body {
 .share-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.4rem;
     margin-top: 1.5rem;
     padding: 0.45rem 1rem;
+    min-width: 44px;
+    min-height: 44px;
     font-size: 0.75rem;
     font-family: inherit;
     letter-spacing: 0.08em;
@@ -1408,6 +1416,8 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 6px;
     padding: 1.5rem;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
     display: flex;
     flex-direction: column;
@@ -1513,12 +1523,40 @@ body {
 }
 
 /* Validation Error State */
+.field-item.is-error {
+    position: relative;
+    padding-bottom: 24px;
+}
+.field-item.is-error::after {
+    content: '入力してください';
+    color: #f87171;
+    font-size: 0.75rem;
+    position: absolute;
+    bottom: 2px;
+    left: 0;
+}
 .field-item.is-error input,
 .field-item.is-error textarea {
     border-color: rgba(239, 68, 68, 0.5) !important;
     background: rgba(239, 68, 68, 0.03) !important;
     box-shadow: 0 0 15px rgba(239, 68, 68, 0.2) !important;
     animation: errorShake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 .post-actions {
@@ -1906,8 +1944,8 @@ body {
     border: 1px solid rgba(165, 243, 252, 0.2);
     color: var(--accent-blue);
     font-size: 1.2rem;
-    width: 2.4rem;
-    height: 2.4rem;
+    width: 44px; /* 領域統一 */
+    height: 44px; /* 領域統一 */
     border-radius: 8px;
     cursor: pointer;
     display: flex;
@@ -1963,8 +2001,8 @@ body {
     background: rgba(255, 255, 255, 0.06);
     border: 1px solid rgba(165, 243, 252, 0.2);
     color: var(--text-muted);
-    width: 2rem;
-    height: 2rem;
+    width: 44px; /* 領域統一 */
+    height: 44px; /* 領域統一 */
     border-radius: 50%;
     cursor: pointer;
     font-size: 0.85rem;

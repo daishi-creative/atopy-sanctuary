@@ -449,10 +449,11 @@ function makeHandleClickable(container) {
 }
 
 function shareToX(message, handle) {
+    const tags = " #アトピー #アトピーサンクチュアリ #希望力";
     const text = `「${message.slice(0, 60)}${message.length > 60 ? '…' : ''}」— ${handle}\n\nアトピーのリアルな声を集めています。あなたも声を残してください。\n`;
     const siteUrl = 'https://atopy-sanctuary.com/';
-    const fullText = `${text} ${siteUrl}`;
-    const encodedText = encodeURIComponent(text);
+    const fullText = `${text} ${siteUrl}${tags}`;
+    const encodedText = encodeURIComponent(text + tags);
     const encodedUrl  = encodeURIComponent(siteUrl);
     const encodedFull = encodeURIComponent(fullText);
     const webUrl = `https://x.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
@@ -462,11 +463,11 @@ function shareToX(message, handle) {
     const isAndroid = /Android/i.test(ua);
 
     if (isIOS) {
-        // iOS: twitter:// スキームで X アプリ起動 → 失敗なら 1.5秒後にブラウザで x.com
+        // iOS: twitter:// でXアプリ起動 → 失敗なら 1.5秒後にブラウザで x.com
         const appUrl = `twitter://post?message=${encodedFull}`;
         window.location.href = appUrl;
         setTimeout(() => {
-            if (!document.hidden) window.location.href = webUrl;
+            if (!document.hidden) window.open(webUrl, '_blank', 'noopener,noreferrer');
         }, 1500);
     } else if (isAndroid) {
         // Android: intent URL（アプリ未インストールなら S.browser_fallback_url が自動発動）
@@ -634,25 +635,46 @@ function initPostForm() {
     const closeBtn = document.getElementById('close-post-btn');
     const submitBtn = document.getElementById('submit-post-btn');
     const overlay = document.getElementById('post-overlay');
+    const messageArea = document.getElementById('post-message');
 
     if (!openBtn || !closeBtn || !submitBtn || !overlay) return;
 
+    let isFormDirty = false;
+
+    // textarea自動拡張 & 状態監視
+    messageArea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        isFormDirty = this.value.trim().length > 0;
+    });
+
+    window.addEventListener('beforeunload', (e) => {
+        if (isFormDirty) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    const tryCloseOverlay = () => {
+        if (isFormDirty && !confirm('入力中の内容が消えますが、閉じてもよろしいですか？')) return;
+        overlay.classList.remove('active');
+        isFormDirty = false;
+        messageArea.style.height = ''; 
+    };
+
     openBtn.addEventListener('click', () => {
         overlay.classList.add('active');
-        document.getElementById('post-message').focus();
+        messageArea.focus();
     });
 
-    closeBtn.addEventListener('click', () => {
-        overlay.classList.remove('active');
-    });
+    closeBtn.addEventListener('click', tryCloseOverlay);
 
     overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('active');
+        if (e.target === overlay) tryCloseOverlay();
     });
 
     // モード切り替え (V4.2: Twin Stars)
     const typeTabs = document.querySelectorAll('.type-tab');
-    const messageArea = document.getElementById('post-message');
     let currentType = 'pain';
 
     const placeholders = {
@@ -669,34 +691,47 @@ function initPostForm() {
         });
     });
 
-    submitBtn.addEventListener('click', () => {
-        const message = document.getElementById('post-message').value.trim();
+    submitBtn.addEventListener('click', async () => {
+        const message = messageArea.value.trim();
         const handle = document.getElementById('post-handle').value.trim();
         const age = document.getElementById('post-age').value;
         const gender = document.getElementById('post-gender').value; // v4.4
 
         if (!message) {
-            document.getElementById("post-message").parentElement.classList.add("is-error");
+            const el = messageArea.parentElement;
+            el.classList.add("is-error");
+            el.scrollIntoView({behavior: 'smooth', block: 'center'});
             return;
         }
 
         if (!handle) {
-            document.getElementById("post-handle").parentElement.classList.add("is-error");
+            const el = document.getElementById("post-handle").parentElement;
+            el.classList.add("is-error");
+            el.scrollIntoView({behavior: 'smooth', block: 'center'});
             return;
         }
 
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `送信中...<span class="loading-spinner"></span>`;
+
         // 送信処理（属性を含める）
-        handleVoiceSubmission({ message, handle, age, gender, type: currentType });
+        await handleVoiceSubmission({ message, handle, age, gender, type: currentType });
 
         // フォームリセット & 閉じる
-        document.getElementById('post-message').value = '';
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        messageArea.value = '';
         document.getElementById('post-handle').value = '';
         document.getElementById('post-age').value = '';
+        document.getElementById('post-gender').value = '';
+        isFormDirty = false;
+        messageArea.style.height = '';
         overlay.classList.remove('active');
     });
 
     // 入力時のエラー解除 (V4.3)
-    const inputs = [document.getElementById("post-message"), document.getElementById("post-handle")];
+    const inputs = [messageArea, document.getElementById("post-handle")];
     inputs.forEach(el => {
         el.addEventListener("input", () => {
             el.parentElement.classList.remove("is-error");
@@ -1215,8 +1250,13 @@ async function init() {
 
     initPostForm();
 
-    // ESC キーで各種オーバーレイを閉じる
+    // ESC または Ctrl+Shift+A で操作
     document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            openAdminPanel();
+            return;
+        }
         if (e.key !== 'Escape') return;
         // 展開済み宇宙カード
         const expandedCard = document.querySelector('.voice-card.expanded');
@@ -1269,9 +1309,7 @@ async function init() {
     if (urlParams.get('view') === 'list' || window.location.hash === '#list') {
         switchMode('list');
     }
-    if (urlParams.has('admin')) {
-        openAdminPanel();
-    }
+    // admin login moved to Ctrl+Shift+A
 }
 
 document.addEventListener('DOMContentLoaded', init);

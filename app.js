@@ -339,15 +339,46 @@ function createVoiceCard(data) {
     return card;
 }
 
+function buildShareUrl(message, handle) {
+    const text = `「${message.slice(0, 60)}${message.length > 60 ? '…' : ''}」— ${handle}\n\nアトピーのリアルな声を集めています。あなたも声を残してください。\n`;
+    const url = 'https://atopy-sanctuary.com/';
+    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+}
+
+function addShareButton(card, message, handle) {
+    if (card.querySelector('.share-btn')) return;
+    const btn = document.createElement('a');
+    btn.className = 'share-btn';
+    btn.href = buildShareUrl(message, handle);
+    btn.target = '_blank';
+    btn.rel = 'noopener noreferrer';
+    btn.setAttribute('aria-label', 'Xでシェア');
+    btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> シェア`;
+    btn.addEventListener('click', (e) => e.stopPropagation());
+    card.appendChild(btn);
+}
+
 function handleCardClick(card) {
     document.querySelectorAll('.voice-card.expanded').forEach(c => {
-        if (c !== card) c.classList.remove('expanded');
+        if (c !== card) {
+            c.classList.remove('expanded');
+            const btn = c.querySelector('.share-btn');
+            if (btn) btn.remove();
+        }
     });
     const wasExpanded = card.classList.contains('expanded');
     card.classList.toggle('expanded');
 
     if (!wasExpanded) {
         visualizeHighlight(card, 'card');
+        const msgEl = card.querySelector('.message');
+        const handleEl = card.querySelector('.handle');
+        if (msgEl && handleEl) {
+            addShareButton(card, msgEl.textContent.trim(), handleEl.textContent.trim());
+        }
+    } else {
+        const btn = card.querySelector('.share-btn');
+        if (btn) btn.remove();
     }
 }
 
@@ -812,11 +843,21 @@ function toggleListItemExpand(item) {
             document.body.appendChild(backdrop);
         }
         requestAnimationFrame(() => backdrop.classList.add('open'));
+
+        const msgEl = item.querySelector('.message');
+        const handleEl = item.querySelector('.handle');
+        if (msgEl && handleEl) {
+            addShareButton(item, msgEl.textContent.trim(), handleEl.textContent.trim());
+        }
     }
 }
 
 function closeListItemExpand() {
-    document.querySelectorAll('.list-item.expanded').forEach(el => el.classList.remove('expanded'));
+    document.querySelectorAll('.list-item.expanded').forEach(el => {
+        el.classList.remove('expanded');
+        const btn = el.querySelector('.share-btn');
+        if (btn) btn.remove();
+    });
     const backdrop = document.getElementById('list-item-backdrop');
     if (backdrop) backdrop.classList.remove('open');
 }

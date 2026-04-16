@@ -339,6 +339,70 @@ function createVoiceCard(data) {
     return card;
 }
 
+// ============================================
+// ハンドル名クリック → 投稿履歴モーダル
+// ============================================
+function showHandleHistory(handle) {
+    // 既存の履歴モーダルは閉じる
+    closeHandleHistory();
+
+    const posts = GLOBAL_VOICES.filter(v => v.handle === handle && v.status === 'approved');
+    if (posts.length === 0) return;
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'handle-history-backdrop';
+    backdrop.className = 'list-item-backdrop';
+    backdrop.addEventListener('click', closeHandleHistory);
+    document.body.appendChild(backdrop);
+
+    const modal = document.createElement('div');
+    modal.id = 'handle-history-modal';
+    modal.className = 'handle-history-modal';
+
+    const typeLabel = { pain: '浄化', dream: '希望' };
+
+    modal.innerHTML = `
+        <div class="hh-header">
+            <span class="hh-handle">${escapeHtml(handle)}</span>
+            <span class="hh-count">${posts.length}件の声</span>
+        </div>
+        <div class="hh-list">
+            ${posts.map(v => `
+                <div class="hh-item type-${v.type || 'pain'}">
+                    <span class="hh-type-tag">${typeLabel[v.type] || '浄化'}</span>
+                    <p class="hh-message">${escapeHtml(v.message)}</p>
+                    ${v.age || v.gender ? `<span class="hh-meta">${escapeHtml(v.age || '')}${v.gender ? ' · ' + escapeHtml(v.gender) : ''}</span>` : ''}
+                </div>
+            `).join('')}
+        </div>
+        <button class="hh-close" onclick="closeHandleHistory()">閉じる</button>
+    `;
+
+    document.body.appendChild(modal);
+    requestAnimationFrame(() => backdrop.classList.add('open'));
+}
+
+function closeHandleHistory() {
+    document.getElementById('handle-history-modal')?.remove();
+    const bd = document.getElementById('handle-history-backdrop');
+    if (bd) { bd.classList.remove('open'); setTimeout(() => bd.remove(), 300); }
+}
+
+function makeHandleClickable(container) {
+    const handleEl = container.querySelector('.handle');
+    if (!handleEl) return;
+    const handle = handleEl.textContent.trim();
+    if (!handle || handle === '匿名') return;
+    const count = GLOBAL_VOICES.filter(v => v.handle === handle && v.status === 'approved').length;
+    if (count < 2) return; // 1件だけなら履歴不要
+    handleEl.classList.add('handle-clickable');
+    handleEl.setAttribute('title', `${handle}さんの声を見る`);
+    handleEl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showHandleHistory(handle);
+    });
+}
+
 function buildShareUrl(message, handle) {
     const text = `「${message.slice(0, 60)}${message.length > 60 ? '…' : ''}」— ${handle}\n\nアトピーのリアルな声を集めています。あなたも声を残してください。\n`;
     const url = 'https://atopy-sanctuary.com/';
@@ -376,6 +440,7 @@ function handleCardClick(card) {
         if (msgEl && handleEl) {
             addShareButton(card, msgEl.textContent.trim(), handleEl.textContent.trim());
         }
+        makeHandleClickable(card);
     } else {
         const btn = card.querySelector('.share-btn');
         if (btn) btn.remove();
@@ -856,6 +921,7 @@ function toggleListItemExpand(item) {
     }
 
     document.body.appendChild(modal);
+    makeHandleClickable(modal);
 
     // バックドロップ
     let backdrop = document.getElementById('list-item-backdrop');
@@ -1062,6 +1128,10 @@ async function init() {
         const postOverlay = document.getElementById('post-overlay');
         if (postOverlay && postOverlay.classList.contains('active')) {
             postOverlay.classList.remove('active');
+            return;
+        }
+        if (document.getElementById('handle-history-modal')) {
+            closeHandleHistory();
             return;
         }
         if (document.getElementById('list-expand-modal')) {

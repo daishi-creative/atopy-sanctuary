@@ -1615,14 +1615,18 @@ body {
    ============================================ */
 @media (max-width: 768px) {
 
-    /* --- ベース --- */
-    body {
+    /* --- ベース（一覧モード時のみスクロール許可） --- */
+    body.list-mode {
         overflow-y: auto;
         height: auto;
         min-height: 100vh;
     }
 
-    /* --- ヘッダー --- */
+    /* --- ヘッダー：一覧モードのみ表示（宇宙モードは全画面） --- */
+    body:not(.list-mode) .master-header {
+        display: none;
+    }
+
     .master-header {
         position: sticky;
         top: 0;
@@ -1649,9 +1653,25 @@ body {
     .sacred-manifesto { display: none; }
     .polaris-banner { display: none !important; }
 
-    /* --- 宇宙モードは非表示 --- */
-    #voices-container { display: none !important; }
-    .mode-toggle { display: none; }
+    /* --- モードトグル：モバイルでは上部右端に小さく --- */
+    .mode-toggle {
+        top: 0.6rem;
+        right: 0.8rem;
+        bottom: auto;
+        left: auto;
+        z-index: 1050;
+    }
+
+    .mode-btn {
+        padding: 0.4rem 0.85rem;
+        font-size: 0.7rem;
+        letter-spacing: 0.05em;
+    }
+
+    /* --- 宇宙モード：カード幅を画面幅に収める --- */
+    .voice-card {
+        max-width: calc(100vw - 40px);
+    }
 
     /* --- 声の件数カウンター：投稿ボタンの真上に固定 --- */
     .solidarity-counter {
@@ -2004,200 +2024,4 @@ body {
     letter-spacing: 0.1em;
     margin-top: 1.5rem;
     font-family: var(--font-sans);
-}
-
-/* ============================================
-   サイドドロワー
-   ============================================ */
-
-.menu-btn {
-    position: fixed;
-    top: 1rem;
-    left: 1rem;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(165, 243, 252, 0.2);
-    color: var(--accent-blue);
-    font-size: 1.2rem;
-    width: 2.4rem;
-    height: 2.4rem;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1100;
-    transition: background 0.2s, border-color 0.2s;
-}
-
-.menu-btn:hover {
-    background: rgba(165, 243, 252, 0.12);
-    border-color: rgba(165, 243, 252, 0.5);
-}
-
-.drawer-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 2500;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
-
-.drawer-backdrop.open {
-    opacity: 1;
-    pointer-events: all;
-}
-
-.side-drawer {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: min(420px, 92vw);
-    height: 100dvh;
-    background: rgba(10, 11, 30, 0.97);
-    border-right: 1px solid rgba(165, 243, 252, 0.15);
-    z-index: 2600;
-    transform: translateX(-100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow-y: auto;
-    backdrop-filter: blur(20px);
-}
-
-.side-drawer.open {
-    transform: translateX(0);
-}
-
-.drawer-close {
-    position: sticky;
-    top: 1rem;
-    left: calc(100% - 3rem);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(165, 243, 252, 0.2);
-    color: var(--text-muted);
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    cursor: pointer;
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 1rem 1rem 0 auto;
-    transition: color 0.2s, border-color 0.2s;
-}
-
-.drawer-close:hover {
-    color: var(--text-main);
-    border-color: rgba(165, 243, 252, 0.5);
-}
-
-.drawer-content {
-    padding: 0.5rem 2rem 3rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.4rem;
-    line-height: 1.85;
-    font-size: 0.9rem;
-    color: var(--text-main);
-}
-
-.drawer-title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1.55;
-    color: var(--accent-blue);
-    letter-spacing: 0.03em;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid rgba(165, 243, 252, 0.12);
-}
-
-.drawer-note {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    border-left: 2px solid rgba(165, 243, 252, 0.3);
-    padding-left: 0.8rem;
-}
-
-.drawer-section {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(165, 243, 252, 0.1);
-    border-radius: 10px;
-    padding: 1.2rem 1.4rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.drawer-section h3 {
-    font-size: 0.8rem;
-    letter-spacing: 0.12em;
-    color: var(--accent-blue);
-    text-transform: uppercase;
-    opacity: 0.8;
-}
-
-.drawer-section ul {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-}
-
-.drawer-section li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.7rem;
-    font-size: 0.88rem;
-    line-height: 1.6;
-}
-
-.phase-tag {
-    display: inline-block;
-    background: rgba(165, 243, 252, 0.1);
-    border: 1px solid rgba(165, 243, 252, 0.25);
-    color: var(--accent-blue);
-    font-size: 0.72rem;
-    padding: 0.1em 0.55em;
-    border-radius: 4px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    margin-top: 0.15em;
-}
-
-.pillar-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.4em;
-    height: 1.4em;
-    border-radius: 50%;
-    background: rgba(253, 164, 175, 0.15);
-    border: 1px solid rgba(253, 164, 175, 0.3);
-    color: var(--accent-warm);
-    font-size: 0.75rem;
-    flex-shrink: 0;
-    margin-top: 0.15em;
-}
-
-.drawer-closing {
-    font-size: 0.88rem;
-    color: var(--text-muted);
-    line-height: 1.9;
-}
-
-.drawer-cta {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--accent-warm);
-    text-align: center;
-    padding: 0.8rem 0;
-}
-
-.drawer-legal {
-    font-size: 0.72rem;
-    color: rgba(148, 163, 184, 0.55);
-    line-height: 1.7;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    padding-top: 1rem;
 }

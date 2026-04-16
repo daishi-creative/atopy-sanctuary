@@ -179,11 +179,15 @@ function setupFirestoreListener() {
 // 重なり回避ロジック
 // ============================================
 function findSafePosition(cardWidth, cardHeight) {
-    const margin = 30;
-    const headerZone = 500;    // デッドゾーン：ヘッダー、バッジ、憲法、北極星をすべて保護（マニフェスト増量に伴い拡張）
-    const keywordZone = 220;   // 右側キーワード避け
-    const bottomZone = 100;    // 下部UI避け
-    
+    const margin = 20;
+    const isMobile = window.innerWidth <= 768;
+    // モバイル：ヘッダー非表示なので上部余白は小さく。デスクトップ：マニフェスト保護で500px
+    const headerZone = isMobile ? 75 : 500;
+    // モバイル：キーワードパネルなし。デスクトップ：右側パネル避け
+    const keywordZone = isMobile ? 15 : 220;
+    // モバイル：下部固定バー（投稿ボタン+カウンター）を避ける
+    const bottomZone = isMobile ? 125 : 100;
+
     const maxX = window.innerWidth - cardWidth - keywordZone;
     const maxY = window.innerHeight - cardHeight - bottomZone;
     
@@ -335,7 +339,45 @@ function createVoiceCard(data) {
         window.addEventListener('mousemove', onMouseMove);
         window.addEventListener('mouseup', onMouseUp);
     });
-    
+
+    // タッチデバイス対応（モバイル宇宙モード用）
+    card.addEventListener('touchstart', (e) => {
+        clearTimeout(removeTimer);
+        if (removeInnerTimer) { clearTimeout(removeInnerTimer); removeInnerTimer = null; }
+        const touch = e.touches[0];
+        startX = touch.clientX;
+        startY = touch.clientY;
+        dist = 0;
+        isDragging = true;
+        const rect = card.getBoundingClientRect();
+        const offsetX = touch.clientX - rect.left;
+        const offsetY = touch.clientY - rect.top;
+
+        card.style.animation = 'none';
+        card.style.transition = 'none';
+        card.style.opacity = '1';
+        card.style.zIndex = '1000';
+
+        const onTouchMove = (te) => {
+            if (!isDragging) return;
+            const t = te.touches[0];
+            dist = Math.sqrt((t.clientX - startX) ** 2 + (t.clientY - startY) ** 2);
+            card.style.top = `${t.clientY - offsetY}px`;
+            card.style.left = `${t.clientX - offsetX}px`;
+            te.preventDefault();
+        };
+
+        const onTouchEnd = () => {
+            isDragging = false;
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchend', onTouchEnd);
+            if (dist < 8) handleCardClick(card);
+        };
+
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+    }, { passive: true });
+
     return card;
 }
 
@@ -1140,11 +1182,9 @@ async function init() {
         }
     });
 
-    // モバイルは常に一覧モード
+    // URLパラメータでモード指定がある場合のみlist切替（モバイルも宇宙がデフォルト）
     const urlParams = new URLSearchParams(window.location.search);
-    if (window.innerWidth <= 768) {
-        switchMode('list');
-    } else if (urlParams.get('view') === 'list' || window.location.hash === '#list') {
+    if (urlParams.get('view') === 'list' || window.location.hash === '#list') {
         switchMode('list');
     }
     if (urlParams.has('admin')) {

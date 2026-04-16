@@ -1671,7 +1671,52 @@ body {
 
     /* マニフェストは非表示 */
     .sacred-manifesto { display: none; }
-    .polaris-banner { display: none !important; }
+
+    /* --- モバイル宇宙モード：北極星を上部固定バーとして表示 --- */
+    body:not(.list-mode) .master-header {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        padding: 0;
+        gap: 0;
+        background: transparent;
+        pointer-events: none;
+        z-index: 160;
+    }
+    body:not(.list-mode) .project-title,
+    body:not(.list-mode) .header-sub {
+        display: none !important;
+    }
+    body:not(.list-mode) .polaris-banner {
+        display: block !important;
+        pointer-events: none;
+        margin-top: 3rem;
+        padding: 0.45rem 1rem 0.5rem;
+        border-top: none;
+        background: rgba(10, 11, 30, 0.72);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    body:not(.list-mode) .polaris-header {
+        flex-direction: row;
+        gap: 0.5rem;
+        justify-content: center;
+        margin-bottom: 0.25rem;
+        align-items: baseline;
+    }
+    body:not(.list-mode) .label-jp {
+        font-size: 0.62rem;
+        letter-spacing: 0.2em;
+    }
+    body:not(.list-mode) .label-en {
+        font-size: 0.48rem;
+        letter-spacing: 0.2em;
+    }
+    body:not(.list-mode) .polaris-voice {
+        font-size: 0.78rem;
+        max-width: 92%;
+        letter-spacing: 0.08em;
+        line-height: 1.65;
+    }
 
     /* --- モードトグル：モバイルでは上部右端に小さく --- */
     .mode-toggle {

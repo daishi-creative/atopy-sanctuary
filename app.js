@@ -182,8 +182,8 @@ function setupFirestoreListener() {
 function findSafePosition(cardWidth, cardHeight) {
     const margin = 20;
     const isMobile = window.innerWidth <= 768;
-    // モバイル：ヘッダー非表示なので上部余白は小さく。デスクトップ：マニフェスト保護で500px
-    const headerZone = isMobile ? 75 : 500;
+    // モバイル：北極星バー（約120px）を避ける。デスクトップ：マニフェスト保護で500px
+    const headerZone = isMobile ? 130 : 500;
     // モバイル：キーワードパネルなし。デスクトップ：右側パネル避け
     const keywordZone = isMobile ? 15 : 220;
     // モバイル：下部固定バー（投稿ボタン+カウンター）を避ける
@@ -448,22 +448,32 @@ function makeHandleClickable(container) {
     });
 }
 
-function buildShareUrl(message, handle) {
+function shareToX(message, handle) {
     const text = `「${message.slice(0, 60)}${message.length > 60 ? '…' : ''}」— ${handle}\n\nアトピーのリアルな声を集めています。あなたも声を残してください。\n`;
-    const url = 'https://atopy-sanctuary.com/';
-    return `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+    const encodedText = encodeURIComponent(text);
+    const encodedUrl  = encodeURIComponent('https://atopy-sanctuary.com/');
+    const appUrl = `twitter://post?message=${encodedText}%20https%3A%2F%2Fatopy-sanctuary.com%2F`;
+    const webUrl = `https://x.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`;
+
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+        // アプリ起動を試み、失敗なら1.2秒後にブラウザでXを開く
+        window.location.href = appUrl;
+        setTimeout(() => {
+            if (!document.hidden) window.location.href = webUrl;
+        }, 1200);
+    } else {
+        window.open(webUrl, '_blank', 'noopener,noreferrer');
+    }
 }
 
 function addShareButton(card, message, handle) {
     if (card.querySelector('.share-btn')) return;
-    const btn = document.createElement('a');
+    const btn = document.createElement('button');
     btn.className = 'share-btn';
-    btn.href = buildShareUrl(message, handle);
-    btn.target = '_blank';
-    btn.rel = 'noopener noreferrer';
     btn.setAttribute('aria-label', 'Xでシェア');
     btn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> シェア`;
-    btn.addEventListener('click', (e) => e.stopPropagation());
+    btn.addEventListener('click', (e) => { e.stopPropagation(); shareToX(message, handle); });
     card.appendChild(btn);
 }
 
@@ -906,9 +916,10 @@ function setPolarisVoice() {
 
     const target = approved[Math.floor(Math.random() * approved.length)];
 
-    // ボカシタグを除去
+    // ボカシタグを除去して60文字に切り詰める
     const cleanText = target.message.replace(/<[^>]*>?/gm, '');
-    polarisEl.innerText = `「 ${cleanText} 」`;
+    const truncated = cleanText.length > 60 ? cleanText.slice(0, 60) + '…' : cleanText;
+    polarisEl.innerText = `「 ${truncated} 」`;
 }
 
 function triggerSyncPulse() {
@@ -982,14 +993,13 @@ function toggleListItemExpand(item) {
     const msgEl = item.querySelector('.message');
     const handleEl = item.querySelector('.handle');
     if (msgEl && handleEl) {
-        const shareBtn = document.createElement('a');
+        const msg = msgEl.textContent.trim();
+        const hdl = handleEl.textContent.trim();
+        const shareBtn = document.createElement('button');
         shareBtn.className = 'share-btn';
-        shareBtn.href = buildShareUrl(msgEl.textContent.trim(), handleEl.textContent.trim());
-        shareBtn.target = '_blank';
-        shareBtn.rel = 'noopener noreferrer';
         shareBtn.setAttribute('aria-label', 'Xでシェア');
         shareBtn.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> シェア`;
-        shareBtn.addEventListener('click', (e) => e.stopPropagation());
+        shareBtn.addEventListener('click', (e) => { e.stopPropagation(); shareToX(msg, hdl); });
         modal.appendChild(shareBtn);
     }
 
